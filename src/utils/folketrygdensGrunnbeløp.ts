@@ -4,7 +4,7 @@ export function useGrunnbellop() {
   const G = useProjectData().folketrygdensGrunnbellop;
 
   return {
-    GtoNOK: (g: number) => Math.round(g * G).toLocaleString("nb-NO"),
+    GtoNOK: (g: number) => (g * G).toLocaleString("nb-NO", { maximumFractionDigits: 2, minimumFractionDigits: 2 }),
     G: G,
   };
 }

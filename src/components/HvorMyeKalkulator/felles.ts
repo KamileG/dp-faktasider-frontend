@@ -43,5 +43,5 @@ export const GrunnlagInput = styled(Input)`
 `;
 
 export function toKR(kr: number) {
-  return Math.round(kr).toLocaleString("nb-NO") + " kr";
+  return kr.toLocaleString("nb-NO", { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + " kr";
 }
