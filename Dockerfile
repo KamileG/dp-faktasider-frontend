@@ -2,8 +2,6 @@ FROM node:14 as build
 
 WORKDIR /usr/src/app
 
-ARG BASE_PATH
-
 ENV NODE_ENV=production
 ENV TZ Europe/Oslo
 
