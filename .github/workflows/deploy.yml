@@ -3,13 +3,51 @@ name: Build and deploy
 on:
   push:
     branches:
-      - master
-      - dev
+#      - master
+#      - dev
+      - feature/byggetid
 
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/dp-faktasider-frontend:${{ github.sha }}
+  IMAGE_CACHE_BUILDER: docker.pkg.github.com/${{ github.repository }}/build-cache-builder
+  IMAGE_CACHE_RUNTIME: docker.pkg.github.com/${{ github.repository }}/build-cache-runtime
 
 jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - name: Cache node moodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Test
+        env:
+          NODE_ENV: test
+        run: |
+          npm install --no-save -no-audit
+          npm run typeCheck
+          npm run lint
+          npm run test
+
   build:
     name: Build and publish Docker image
     runs-on: ubuntu-latest
@@ -17,13 +55,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and Publish Docker image
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKERR_BUILDKIT: 1
         run: |
-          docker build -t $IMAGE .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push $IMAGE
+          docker pull ${{ env.IMAGE_CACHE_BUILDER }} || true
+          docker pull ${{ env.IMAGE_CACHE_RUNTIME }} || true
+
+          docker build . -t $IMAGE \
+            --cache-from=${{ env.IMAGE_CACHE_BUILDER }},${{ env.IMAGE_CACHE_RUNTIME }} \
+            --build-arg BUILDKIT_INLINE_CACHE=1
+
+          docker push ${{ env.image }}
 
       - name: Archive NAIS yaml
         uses: actions/upload-artifact@v1
@@ -31,9 +81,36 @@ jobs:
           name: nais-yaml
           path: nais
 
+  update-docker-cache:
+    name: Update Docker Cache
+    needs: [ build ]
+    if: github.ref == 'refs/heads/feature/byggetid'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker pull ${{ env.IMAGE_CACHE_BUILDER }} || true
+          docker build . -t ${{ env.IMAGE_CACHE_BUILDER }} --target builder --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from=${{ env.IMAGE_CACHE_BUILDER }}
+          docker push ${{ env.IMAGE_CACHE_BUILDER }}
+          docker pull ${{ env.IMAGE_CACHE_RUNTIME }} || true
+          docker build . -t ${{ env.IMAGE_CACHE_RUNTIME }} --target runtime --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from=${{ env.IMAGE_CACHE_RUNTIME }}
+          docker push ${{ env.IMAGE_CACHE_RUNTIME }}
+
   deploy-dev:
     name: Deploy to dev
-    needs: [build]
+    needs: [ test, build ]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch NAIS yaml
@@ -52,7 +129,7 @@ jobs:
 
   deploy-dev-gcp:
     name: Deploy to dev
-    needs: [build]
+    needs: [ test, build ]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch NAIS yaml

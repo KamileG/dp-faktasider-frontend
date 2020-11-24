@@ -1,26 +1,20 @@
 FROM node:14 as build
 
+WORKDIR /usr/src/app
+
+ARG BASE_PATH
+
 ENV NODE_ENV=production
 ENV TZ Europe/Oslo
 
 RUN npm install -g gatsby-cli
+COPY package*.json /usr/src/app/
+RUN npm ci
 
-WORKDIR /app
-
-ADD package.json package-lock.json ./
-RUN npm install
-
-ADD . ./
-
-ENV NODE_ENV=test
-RUN npm run typeCheck
-RUN npm run lint
-RUN npm run test
-
-ENV NODE_ENV=production
+COPY . /usr/src/app
 RUN npm run build
 
-FROM gatsbyjs/gatsby
-COPY --from=build /app/public /pub/arbeid
-COPY --from=build /app/public/404/index.html /pub/404.html
+FROM gatsbyjs/gatsby as runtime
+COPY --from=build /usr/src/app/public /pub/arbeid
+COPY --from=build /usr/src/app/public/404/index.html /pub/404.html
 COPY nginx-server-rules.conf /etc/nginx/server.conf
