@@ -73,7 +73,7 @@ jobs:
             --cache-from=${{ env.IMAGE_CACHE_BUILDER }},${{ env.IMAGE_CACHE_RUNTIME }} \
             --build-arg BUILDKIT_INLINE_CACHE=1
 
-          docker push ${{ env.image }}
+          docker push ${{ env.IMAGE }}
 
       - name: Archive NAIS yaml
         uses: actions/upload-artifact@v1
