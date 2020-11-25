@@ -14,7 +14,8 @@ import { useWordCount } from "./useWordCount";
 import { RefObject } from "react";
 
 const StyledNav = styled.nav`
-  border-top: ${theme.border.banner};
+  border: ${theme.border.banner};
+  border-right: none;
   background-color: white;
   padding: ${theme.layoutPadding};
   padding-bottom: 3rem; // Så chatbotten frida ikke legger seg over tekst i Tilpass innhold

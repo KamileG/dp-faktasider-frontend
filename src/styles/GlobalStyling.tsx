@@ -17,9 +17,6 @@ const Styling = createGlobalStyle`
         }
         font-family: 'Source Sans Pro', sans-serif;
     }
-    body {
-        background-color: ${theme.colors.bakgrunn};
-    }
     
     .ReactCollapse--collapse {
         transition: height 0.3s;

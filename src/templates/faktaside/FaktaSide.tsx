@@ -14,7 +14,6 @@ import { useMount } from "react-use";
 import { loggSidevisning } from "../../utils/logging";
 import InnholdetErTilpasset from "./InnholdsMeny/InnholdetErTilpasset";
 import useLoggUtdatertHashlenke from "./useLoggUtdatertHashlenke";
-import KortFortalt from "./KortFortalt";
 import useBreadcrumbs from "./useBreadcrumbs";
 import Notifikasjoner from "./Notifikasjoner";
 
@@ -49,12 +48,12 @@ function FaktaSide(props: FaktaSideProps) {
         header={tittel}
         beskrivelse={beskrivelse}
         publiseringsTidspunkt={page.publiseringsTidspunkt}
+        kortFortalt={props.pageContext.kortFortalt}
       >
         <GraphQLErrorList errors={props.errors} />
         <InnholdetErTilpasset />
         <Notifikasjoner notifikasjoner={props.pageContext.notifikasjoner} />
         <div ref={wordCountRef}>
-          <KortFortalt blocks={props.pageContext.kortFortalt} />
           <BlockContent blocks={parsedInnhold} />
           <RelatertInformasjon blocks={page.relatertInformasjon} />
         </div>

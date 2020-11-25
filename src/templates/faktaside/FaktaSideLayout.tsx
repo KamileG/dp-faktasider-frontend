@@ -9,6 +9,7 @@ import { MainContentStyle } from "./MainContentStyle";
 import withErrorBoundary from "../../components/withErrorBoundary";
 import Filtrering from "./TilpassInnhold/TilpassInnhold";
 import { theme } from "../../styles/theme";
+import { Block } from "../../utils/richTextUtils/richTextTypes";
 
 interface Props {
   header: string;
@@ -16,6 +17,7 @@ interface Props {
   children: ReactNode;
   publiseringsTidspunkt?: string;
   wordCountRef?: RefObject<HTMLElement>;
+  kortFortalt?: Block[];
 }
 
 const ContentStyle = styled.div`
@@ -58,6 +60,7 @@ function FaktaSideLayout(props: Props) {
               heading={props.header}
               beskrivelse={props.beskrivelse}
               publiseringsTidspunkt={props.publiseringsTidspunkt}
+              kortFortalt={props.kortFortalt}
             />
             <MainContentStyle>{props.children}</MainContentStyle>
           </div>

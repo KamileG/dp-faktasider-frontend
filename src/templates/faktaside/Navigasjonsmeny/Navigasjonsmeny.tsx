@@ -12,7 +12,8 @@ const DesktopNav = styled.nav`
   @media (${theme.media.smallScreen}) {
     display: none;
   }
-  border-top: ${theme.border.banner};
+  border: ${theme.border.banner};
+  border-left: none;
   background-color: white;
   @supports (position: sticky) {
     position: sticky;
