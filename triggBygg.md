@@ -27,3 +27,4 @@ Hvis vi bare får de siste endringene ut.
 Hey ho nå er det jul igjen!
 På låven sitter julenissen med sin julegrøt!
 Jeg har ikke tid for jeg må finne skjegget
+Nissemann!
